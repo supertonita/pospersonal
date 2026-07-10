@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>POS TOÑITA - Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #e5e5e5; color: #000000; }
+        .screen { display: none; min-height: 100vh; padding-bottom: 20px; }
+        .screen.active { display: block; }
+        header { background: #151515; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;}
+        .nav-bar { display: flex; gap: 8px; padding: 10px; background: #adadad; }
+        .nav-bar button { flex: 1; padding: 10px 5px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .section { padding: 15px 20px; background: white; margin: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        .form-group input, select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
+        .buscador-input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 2px solid #4a3b32; font-size: 16px; }
+        .grid-productos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .producto-card { border: 1px solid #0f0303; padding: 15px; border-radius: 8px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; }
+        .producto-card button { margin-top: 10px; width: 100%; padding: 8px; background: #4a3b32; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        #carrito-lista { list-style: none; margin-top: 10px; }
+        #carrito-lista li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; align-items: center; }
+        .totales { margin-top: 15px; font-size: 20px; font-weight: bold; text-align: right; }
+        button { padding: 12px 15px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+        .btn-primary { background: #25D366; color: white; width: 100%; font-weight: bold; margin-top: 15px; }
+        .btn-primary:disabled { background: #ccc; }
+        .btn-secondary { background: #f6f3ee; color: #4a3b32; font-weight: bold; }
+        .btn-danger { background: #e74c3c; color: white; padding: 6px 10px; font-size: 12px; border-radius: 4px; }
+        .btn-edit { background: #3498db; color: white; padding: 6px 10px; font-size: 12px; border-radius: 4px; margin-right: 5px; }
+        .btn-status { background: #f39c12; color: white; padding: 6px 10px; font-size: 12px; border-radius: 4px; }
+        .kpi-box { display: flex; gap: 10px; margin: 10px; }
+        .kpi-box div { flex: 1; background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .filtro-fechas { display: flex; gap: 10px; margin-bottom: 10px; }
+        .filtro-fechas input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
+        .listado-administrable { margin-top: 15px; max-height: 300px; overflow-y: auto; }
+        .item-administrable { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+    <div id="pos-screen" class="screen active">
+        <header><h2>BIENVENIDO A PVD TOÑITA </h2></header>
+        <div class="nav-bar">
+            <button id="btn-ver-reportes" class="btn-secondary">Reportes</button>
+            <button id="btn-nav-producto" class="btn-secondary">Producto</button>
+            <button id="btn-nav-cliente" class="btn-secondary">Cliente</button>
+        </div>
+        <main>
+            <div class="section">
+                <label style="font-weight: bold;"> Seleccionar Cliente:</label>
+                <select id="cliente-select" style="margin-top: 5px;">
+                    <option value="">Cargando clientes...</option>
+                </select>
+            </div>
+            <div class="section">
+                <label style="font-weight: bold;">Catálogo:</label>
+                <input type="text" id="buscar-producto" class="buscador-input" placeholder="Buscar producto...">
+                <div id="productos-lista" class="grid-productos"></div>
+            </div>
+            <div class="section">
+                <h3>Carrito Actual</h3>
+                <ul id="carrito-lista"></ul>
+                <div class="totales"><p>Total: $<span id="total-venta">0.00</span></p></div>
+                <button id="btn-cobrar" class="btn-primary" disabled>Generar PDF y Enviar</button>
+            </div>
+        </main>
+    </div>
+
+    <div id="reportes-screen" class="screen">
+        <header>
+            <h2>Reportes y Ventas</h2>
+            <button class="btn-volver-pos btn-secondary">Volver</button>
+        </header>
+        <main>
+            <div class="section">
+                <label style="font-weight: bold; display:block; margin-bottom: 5px;">Filtrar por Fechas:</label>
+                <div class="filtro-fechas">
+                    <input type="date" id="filtro-inicio">
+                    <input type="date" id="filtro-fin">
+                </div>
+                <button id="btn-filtrar-reportes" class="btn-primary" style="margin-top: 0; background: #4a3b32;">Aplicar Filtro</button>
+            </div>
+            <div class="kpi-box">
+                <div>
+                    <h3>Ventas</h3>
+                    <h2>$<span id="kpi-ventas">0.00</span></h2>
+                </div>
+                <div>
+                    <h3>Utilidad</h3>
+                    <h2>$<span id="kpi-utilidad">0.00</span></h2>
+                </div>
+            </div>
+            <div class="section">
+                <canvas id="graficaVentas"></canvas>
+            </div>
+            <div class="section">
+                <h3>Historial Detallado</h3>
+                <ul id="historial-lista"></ul>
+            </div>
+        </main>
+    </div>
+
+    <div id="producto-screen" class="screen">
+        <header>
+            <h2 id="titulo-producto-screen">Gestión de Productos</h2>
+            <button class="btn-volver-pos btn-secondary">Volver</button>
+        </header>
+        <main class="section">
+            <h3 id="form-producto-subtitulo">Agregar Nuevo Producto</h3>
+            <input type="hidden" id="prod-id">
+            <div class="form-group" style="margin-top: 10px;">
+                <label>Nombre del Producto:</label>
+                <input type="text" id="prod-nombre" placeholder=" Café Molido 500g">
+            </div>
+            <div class="form-group">
+                <label>Costo Unitario ($):</label>
+                <input type="number" step="0.01" id="prod-costo" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Precio de Venta ($):</label>
+                <input type="number" step="0.01" id="prod-precio" placeholder="0.00">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-guardar-producto" class="btn-primary" style="background: #4a3b32; margin-top: 0;">Guardar</button>
+                <button id="btn-cancelar-producto" class="btn-secondary" style="display: none;">Cancelar Edición</button>
+            </div>
+            <hr style="margin-top: 20px; border: 0; border-top: 1px solid #ccc;">
+            <h3 style="margin-top: 15px;">Listado de Productos</h3>
+            <div id="lista-admin-productos" class="listado-administrable"></div>
+        </main>
+    </div>
+
+    <div id="cliente-screen" class="screen">
+        <header>
+            <h2 id="titulo-cliente-screen">Gestión de Clientes</h2>
+            <button class="btn-volver-pos btn-secondary">Volver</button>
+        </header>
+        <main class="section">
+            <h3 id="form-cliente-subtitulo">Registrar Nuevo Cliente</h3>
+            <input type="hidden" id="cli-id">
+            <div class="form-group" style="margin-top: 10px;">
+                <label>Nombre del Cliente (Contacto):</label>
+                <input type="text" id="cli-nombre" placeholder="">
+            </div>
+            <div class="form-group">
+                <label>Nombre del Negocio:</label>
+                <input type="text" id="cli-negocio" placeholder="">
+            </div>
+            <div class="form-group">
+                <label>Teléfono (WhatsApp):</label>
+                <input type="text" id="cli-telefono" placeholder="Ej. 50371234567">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-guardar-cliente" class="btn-primary" style="background: #4a3b32; margin-top: 0;">Guardar</button>
+                <button id="btn-cancelar-cliente" class="btn-secondary" style="display: none;">Cancelar Edición</button>
+            </div>
+            <hr style="margin-top: 20px; border: 0; border-top: 1px solid #ccc;">
+            <h3 style="margin-top: 15px;">Listado de Clientes</h3>
+            <div id="lista-admin-clientes" class="listado-administrable"></div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, serverTimestamp, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAvJGr1uUfI2VWXU4dmmLJDa96p0iGjXLw",
+            authDomain: "poscafe-f181e.firebaseapp.com",
+            projectId: "poscafe-f181e",
+            storageBucket: "poscafe-f181e.firebasestorage.app",
+            messagingSenderId: "1007200459396",
+            appId: "1:1007200459396:web:4c1452b4602c3266ea00d1",
+            measurementId: "G-W4K5F1ET80"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let clientesData = [];
+        let productosData = [];
+        let ventasTotalesData = []; 
+        let carrito = [];
+        let graficaInstancia = null;
+        
+        const PIN_SECRETO = "1234";
+
+        // --- NAVEGACIÓN ---
+        document.getElementById('btn-ver-reportes').addEventListener('click', () => cambiarPantalla('reportes-screen'));
+        document.getElementById('btn-nav-producto').addEventListener('click', () => { resetFormProducto(); cambiarPantalla('producto-screen'); });
+        document.getElementById('btn-nav-cliente').addEventListener('click', () => { resetFormCliente(); cambiarPantalla('cliente-screen'); });
+        document.querySelectorAll('.btn-volver-pos').forEach(btn => btn.addEventListener('click', () => cambiarPantalla('pos-screen')));
+
+        function cambiarPantalla(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        iniciarApp();
+
+        function iniciarApp() {
+            // Escuchar Clientes en tiempo real
+            onSnapshot(collection(db, "clientes"), (snapshot) => {
+                clientesData = [];
+                const select = document.getElementById('cliente-select');
+                select.innerHTML = '<option value="">Selecciona un cliente...</option>';
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    // Si no viene la propiedad 'estado', asumimos que está activo
+                    if (data.estado === undefined) data.estado = "Activo"; 
+                    clientesData.push({ id: doc.id, ...data });
+                });
+                
+                // Cargar en el selector únicamente los Activos
+                clientesData.forEach(c => {
+                    if (c.estado === "Activo") {
+                        const negocio = c.nombreNegocio || 'Sin Negocio';
+                        const contacto = c.contacto || 'Sin Contacto';
+                        select.innerHTML += `<option value="${c.id}">${negocio} (${contacto})</option>`;
+                    }
+                });
+
+                renderizarListaAdminClientes();
+            });
+
+            // Escuchar Productos en tiempo real
+            onSnapshot(collection(db, "productos"), (snapshot) => {
+                productosData = [];
+                snapshot.forEach((doc) => {
+                    productosData.push({ id: doc.id, ...doc.data() });
+                });
+                renderizarProductos(); 
+                renderizarListaAdminProductos();
+            });
+
+            // Escuchar Ventas
+            onSnapshot(collection(db, "ventas"), (snapshot) => {
+                ventasTotalesData = [];
+                snapshot.forEach((documento) => {
+                    ventasTotalesData.push({ id: documento.id, ...documento.data() });
+                });
+                procesarReportes(); 
+            });
+        }
+
+        // --- BUSCADOR DE PRODUCTOS ---
+        document.getElementById('buscar-producto').addEventListener('input', (e) => {
+            renderizarProductos(e.target.value);
+        });
+
+        function renderizarProductos(filtro = '') {
+            const lista = document.getElementById('productos-lista');
+            lista.innerHTML = '';
+            
+            const textoFiltro = filtro.toLowerCase();
+            const productosFiltrados = productosData.filter(p => 
+                (p.nombre && p.nombre.toLowerCase().includes(textoFiltro))
+            );
+
+            if(productosFiltrados.length === 0) {
+                lista.innerHTML = '<p style="grid-column: span 2; text-align:center;">No se encontraron productos.</p>';
+                return;
+            }
+
+            productosFiltrados.forEach(data => {
+                lista.innerHTML += `
+                    <div class="producto-card">
+                        <h4>${data.nombre}</h4>
+                        <p style="font-weight:bold; color:#4a3b32; margin-top:5px;">$${parseFloat(data.precio_venta).toFixed(2)}</p>
+                        <button onclick="agregarAlCarrito('${data.id}')">+ Agregar</button>
+                    </div>
+                `;
+            });
+        }
+
+        // --- RENDERIZAR LISTAS ADMINISTRATIVAS (EDICIÓN Y BAJAS) ---
+        function renderizarListaAdminClientes() {
+            const contenedor = document.getElementById('lista-admin-clientes');
+            contenedor.innerHTML = '';
+            if (clientesData.length === 0) {
+                contenedor.innerHTML = '<p>No hay clientes registrados.</p>';
+                return;
+            }
+            clientesData.forEach(c => {
+                const badgeColor = c.estado === "Activo" ? "#25D366" : "#e74c3c";
+                contenedor.innerHTML += `
+                    <div class="item-administrable">
+                        <div>
+                            <strong>${c.nombreNegocio}</strong> (${c.contacto})<br>
+                            <small>Tel: ${c.telefono} | Estado: <span style="color:${badgeColor}; font-weight:bold;">${c.estado}</span></small>
+                        </div>
+                        <div>
+                            <button class="btn-edit" onclick="prepararEditarCliente('${c.id}')">Editar</button>
+                            <button class="btn-status" style="background-color:${c.estado === 'Activo' ? '#e74c3c' : '#25D366'}" onclick="cambiarEstadoCliente('${c.id}', '${c.estado}')">
+                                ${c.estado === 'Activo' ? 'Dar de Baja' : 'Activar'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderizarListaAdminProductos() {
+            const contenedor = document.getElementById('lista-admin-productos');
+            contenedor.innerHTML = '';
+            if (productosData.length === 0) {
+                contenedor.innerHTML = '<p>No hay productos registrados.</p>';
+                return;
+            }
+            productosData.forEach(p => {
+                contenedor.innerHTML += `
+                    <div class="item-administrable">
+                        <div>
+                            <strong>${p.nombre}</strong><br>
+                            <small>Costo: $${parseFloat(p.costo_unitario).toFixed(2)} | Venta: $${parseFloat(p.precio_venta).toFixed(2)}</small>
+                        </div>
+                        <div>
+                            <button class="btn-edit" onclick="prepararEditarProducto('${p.id}')">Editar / Cambiar Precio</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- CONTROLADORES DE CLIENTES (EDITAR Y ESTADO) ---
+        window.prepararEditarCliente = (id) => {
+            const c = clientesData.find(cli => cli.id === id);
+            if (!c) return;
+            document.getElementById('cli-id').value = c.id;
+            document.getElementById('cli-nombre').value = c.contacto;
+            document.getElementById('cli-negocio').value = c.nombreNegocio;
+            document.getElementById('cli-telefono').value = c.telefono;
+            
+            document.getElementById('form-cliente-subtitulo').innerText = "✏️ Editar Datos del Cliente";
+            document.getElementById('btn-cancelar-cliente').style.display = "inline-block";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.cambiarEstadoCliente = async (id, estadoActual) => {
+            const nuevoEstado = estadoActual === "Activo" ? "Inactivo" : "Activo";
+            const confirmacion = confirm(`¿Estás seguro de que quieres cambiar el estado de este cliente a ${nuevoEstado}?`);
+            if (confirmacion) {
+                await updateDoc(doc(db, "clientes", id), { estado: nuevoEstado });
+            }
+        };
+
+        document.getElementById('btn-cancelar-cliente').addEventListener('click', resetFormCliente);
+
+        function resetFormCliente() {
+            document.getElementById('cli-id').value = '';
+            document.getElementById('cli-nombre').value = '';
+            document.getElementById('cli-negocio').value = '';
+            document.getElementById('cli-telefono').value = '';
+            document.getElementById('form-cliente-subtitulo').innerText = "Registrar Nuevo Cliente";
+            document.getElementById('btn-cancelar-cliente').style.display = "none";
+        }
+
+        // --- CONTROLADORES DE PRODUCTOS (EDITAR) ---
+        window.prepararEditarProducto = (id) => {
+            const p = productosData.find(prod => prod.id === id);
+            if (!p) return;
+            document.getElementById('prod-id').value = p.id;
+            document.getElementById('prod-nombre').value = p.nombre;
+            document.getElementById('prod-costo').value = p.costo_unitario;
+            document.getElementById('prod-precio').value = p.precio_venta;
+            
+            document.getElementById('form-producto-subtitulo').innerText = "✏️ Modificar Producto / Precios";
+            document.getElementById('btn-cancelar-producto').style.display = "inline-block";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        document.getElementById('btn-cancelar-producto').addEventListener('click', resetFormProducto);
+
+        function resetFormProducto() {
+            document.getElementById('prod-id').value = '';
+            document.getElementById('prod-nombre').value = '';
+            document.getElementById('prod-costo').value = '';
+            document.getElementById('prod-precio').value = '';
+            document.getElementById('form-producto-subtitulo').innerText = "Agregar Nuevo Producto";
+            document.getElementById('btn-cancelar-producto').style.display = "none";
+        }
+
+        // --- GUARDAR O ACTUALIZAR PRODUCTO ---
+        document.getElementById('btn-guardar-producto').addEventListener('click', async () => {
+            const id = document.getElementById('prod-id').value;
+            const nombre = document.getElementById('prod-nombre').value.trim();
+            const costo = parseFloat(document.getElementById('prod-costo').value);
+            const precio = parseFloat(document.getElementById('prod-precio').value);
+
+            if (!nombre || isNaN(costo) || isNaN(precio)) return alert("Completa todos los campos");
+
+            if (id) {
+                // Editar existente
+                await updateDoc(doc(db, "productos", id), {
+                    nombre: nombre, costo_unitario: costo, precio_venta: precio
+                });
+                alert("Producto actualizado correctamente");
+            } else {
+                // Crear nuevo
+                await addDoc(collection(db, "productos"), {
+                    nombre: nombre, costo_unitario: costo, precio_venta: precio
+                });
+                alert("Producto guardado");
+            }
+            
+            resetFormProducto();
+            cambiarPantalla('pos-screen');
+        });
+
+        // --- GUARDAR O ACTUALIZAR CLIENTE ---
+        document.getElementById('btn-guardar-cliente').addEventListener('click', async () => {
+            const id = document.getElementById('cli-id').value;
+            const nombreCliente = document.getElementById('cli-nombre').value.trim();
+            const nombreNegocio = document.getElementById('cli-negocio').value.trim();
+            const telefono = document.getElementById('cli-telefono').value.trim();
+
+            if (!nombreCliente || !nombreNegocio || !telefono) return alert("Completa los campos");
+
+            if (id) {
+                // Editar existente
+                await updateDoc(doc(db, "clientes", id), {
+                    contacto: nombreCliente, nombreNegocio: nombreNegocio, telefono: telefono
+                });
+                alert("Datos del cliente actualizados correctamente");
+            } else {
+                // Crear nuevo
+                await addDoc(collection(db, "clientes"), {
+                    contacto: nombreCliente, nombreNegocio: nombreNegocio, telefono: telefono, estado: "Activo"
+                });
+                alert("Cliente guardado");
+            }
+
+            resetFormCliente();
+            cambiarPantalla('pos-screen');
+        });
+
+        // --- REPORTES, GRÁFICAS Y FECHAS ---
+        document.getElementById('btn-filtrar-reportes').addEventListener('click', procesarReportes);
+
+        function procesarReportes() {
+            const fechaInicio = document.getElementById('filtro-inicio').value;
+            const fechaFin = document.getElementById('filtro-fin').value;
+
+            let ventasFiltradas = ventasTotalesData;
+
+            if (fechaInicio && fechaFin) {
+                const inicioObj = new Date(fechaInicio + 'T00:00:00');
+                const finObj = new Date(fechaFin + 'T23:59:59');
+                
+                ventasFiltradas = ventasTotalesData.filter(v => {
+                    if (!v.fecha) return true; 
+                    const fechaVenta = v.fecha.toDate();
+                    return fechaVenta >= inicioObj && fechaVenta <= finObj;
+                });
+            }
+
+            let sumVentas = 0;
+            let sumUtilidad = 0;
+            const historialLista = document.getElementById('historial-lista');
+            historialLista.innerHTML = '';
+
+            const datosPorFecha = {};
+
+            ventasFiltradas.forEach(v => {
+                const tv = v.total_venta || 0;
+                const mu = v.margen_utilidad || 0;
+                
+                sumVentas += tv;
+                sumUtilidad += mu;
+
+                const fechaStr = v.fecha ? v.fecha.toDate().toLocaleDateString() : 'Hoy';
+
+                if (!datosPorFecha[fechaStr]) {
+                    datosPorFecha[fechaStr] = { ventas: 0, utilidad: 0 };
+                }
+                datosPorFecha[fechaStr].ventas += tv;
+                datosPorFecha[fechaStr].utilidad += mu;
+                
+                historialLista.innerHTML += `
+                    <li style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0; border-bottom:1px solid #eee;">
+                        <div>
+                            <strong>$${tv.toFixed(2)}</strong> - ${fechaStr}<br>
+                            <small>Utilidad: $${mu.toFixed(2)}</small>
+                        </div>
+                        <button class="btn-danger" onclick="borrarRegistro('${v.id}')">Borrar</button>
+                    </li>
+                `;
+            });
+
+            document.getElementById('kpi-ventas').innerText = sumVentas.toFixed(2);
+            document.getElementById('kpi-utilidad').innerText = sumUtilidad.toFixed(2);
+
+            const labelsGrafica = Object.keys(datosPorFecha);
+            const dataVentasGrafica = labelsGrafica.map(fecha => datosPorFecha[fecha].ventas);
+            const dataUtilidadGrafica = labelsGrafica.map(fecha => datosPorFecha[fecha].utilidad);
+
+            actualizarGrafica(labelsGrafica, dataVentasGrafica, dataUtilidadGrafica);
+        }
+
+        function actualizarGrafica(labels, dataVentas, dataUtilidad) {
+            const ctx = document.getElementById('graficaVentas').getContext('2d');
+            if (graficaInstancia) {
+                graficaInstancia.destroy(); 
+            }
+
+            graficaInstancia = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Ingresos Brutos ($)',
+                            data: dataVentas,
+                            backgroundColor: '#25D366'
+                        },
+                        {
+                            label: 'Margen Utilidad ($)',
+                            data: dataUtilidad,
+                            backgroundColor: '#4a3b32'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // --- BORRAR REGISTRO DE VENTA ---
+        window.borrarRegistro = async (idVenta) => {
+            const pin = prompt("Seguridad: Ingresa el PIN para borrar este registro:");
+            if (pin === PIN_SECRETO) {
+                await deleteDoc(doc(db, "ventas", idVenta));
+                alert("Registro eliminado.");
+            } else if (pin !== null) {
+                alert("PIN incorrecto.");
+            }
+        };
+
+        // --- CARRITO ---
+        window.agregarAlCarrito = (idProducto) => {
+            const prod = productosData.find(p => p.id === idProducto);
+            const itemExt = carrito.find(i => i.id === idProducto);
+            if (itemExt) itemExt.cantidad++; else carrito.push({ ...prod, cantidad: 1 });
+            actualizarCarrito();
+        };
+
+        function actualizarCarrito() {
+            const lista = document.getElementById('carrito-lista');
+            let total = 0;
+            lista.innerHTML = '';
+            
+            carrito.forEach((item, index) => {
+                const sub = item.precio_venta * item.cantidad;
+                total += sub;
+                lista.innerHTML += `
+                    <li>
+                        <span>${item.cantidad}x ${item.nombre}</span>
+                        <span>$${sub.toFixed(2)} <button class="btn-danger" onclick="quitar(${index})">X</button></span>
+                    </li>`;
+            });
+            document.getElementById('total-venta').innerText = total.toFixed(2);
+            document.getElementById('btn-cobrar').disabled = (carrito.length === 0 || document.getElementById('cliente-select').value === "");
+        }
+
+        window.quitar = (index) => { carrito.splice(index, 1); actualizarCarrito(); };
+        document.getElementById('cliente-select').addEventListener('change', actualizarCarrito);
+
+    // --- COBRAR CON ENVÍO DE ENLACE DE TICKET ---
+        document.getElementById('btn-cobrar').addEventListener('click', async () => {
+            const clienteId = document.getElementById('cliente-select').value;
+            const cliente = clientesData.find(c => c.id === clienteId);
+            
+            let tVenta = 0, tCosto = 0;
+            carrito.forEach(i => { 
+                tVenta += (i.precio_venta * i.cantidad); 
+                tCosto += (i.costo_unitario * i.cantidad); 
+            });
+            
+            // --- GENERACIÓN DE TICKET PROFESIONAL LISO ---
+            const { jsPDF } = window.jspdf;
+            
+            let alturaTicket = 150 + (carrito.length * 22) + 60;
+            const docPdf = new jsPDF({ format: [164, alturaTicket], unit: 'pt' });
+
+            // Encabezado
+            docPdf.setFont("Helvetica", "bold");
+            docPdf.setFontSize(10);
+            docPdf.text("MINI SUPER TOÑITA", 82, 30, { align: 'center' });
+            
+            docPdf.setFont("Helvetica", "normal");
+            docPdf.setFontSize(7);
+            docPdf.text("CORINTO", 82, 40, { align: 'center' });
+            
+            // Datos del Cliente
+            docPdf.setFont("Helvetica", "bold");
+            docPdf.text("DATOS DEL CLIENTE", 20, 58);
+            docPdf.setFont("Helvetica", "normal");
+            docPdf.text(`Negocio: ${cliente.nombreNegocio}`, 20, 68);
+            docPdf.text(`Contacto: ${cliente.contacto}`, 20, 78);
+            docPdf.text(`Teléfono: ${cliente.telefono}`, 20, 88);
+            
+            // Fecha y Hora
+            const fechaActual = new Date();
+            const fechaStr = fechaActual.toLocaleDateString().replace(/\//g, '-');
+            const horaStr = fechaActual.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            docPdf.text(`Fecha: ${fechaStr}   Hora: ${horaStr}`, 20, 100);
+            
+            // Tabla de Detalles
+            docPdf.setFont("Helvetica", "bold");
+            docPdf.text("DESCRIPCIÓN", 20, 118);
+            docPdf.text("TOTAL", 144, 118, { align: 'right' });
+            
+            docPdf.setFont("Helvetica", "normal");
+            let y = 132;
+            
+            carrito.forEach(i => {
+                docPdf.text(`${i.nombre}`, 20, y);
+                docPdf.setFontSize(6);
+                docPdf.text(`${i.cantidad} x $${parseFloat(i.precio_venta).toFixed(2)}`, 20, y + 8);
+                
+                docPdf.setFontSize(7);
+                docPdf.text(`$${(i.precio_venta * i.cantidad).toFixed(2)}`, 144, i.precio_venta ? 144 : 144, { align: 'right' });
+                y += 22;
+            });
+            
+            y += 5; 
+            docPdf.setFont("Helvetica", "bold");
+            docPdf.setFontSize(9);
+            docPdf.text("TOTAL A PAGAR:", 20, y + 12);
+            docPdf.text(`$${tVenta.toFixed(2)}`, 144, y + 12, { align: 'right' });
+            
+            // Frase de Agradecimiento
+            docPdf.setFont("Helvetica", "italic");
+            docPdf.setFontSize(8);
+            docPdf.text("¡Muchas gracias por su compra!", 82, y + 36, { align: 'center' });
+            docPdf.setFont("Helvetica", "normal");
+            docPdf.setFontSize(7);
+            docPdf.text("¡Esperamos verle pronto!", 82, y + 46, { align: 'center' });
+
+            // En lugar de descargarlo de inmediato en tu PC, obtenemos el string en Base64
+            const pdfBase64 = docPdf.output('datauristring');
+
+          let urlDescargaTicket = "";
+            try {
+                // Creamos una ruta única usando el nombre del negocio y una marca de tiempo
+                const nombreArchivo = `tickets/Ticket_${cliente.nombreNegocio.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+                
+                // Inicializamos la variable obteniéndola directamente del objeto global de firebase
+                const firebaseStorageInstance = firebase.storage();
+                
+                // Creamos la referencia al archivo
+                const storageRef = firebaseStorageInstance.ref(nombreArchivo);
+                
+                // Subimos el string en formato Data URL
+                const snapshot = await storageRef.putString(pdfBase64, 'data_url');
+                
+                // Obtenemos la URL de descarga del snapshot finalizado
+                urlDescargaTicket = await snapshot.ref.getDownloadURL();
+            } catch (error) {
+                console.error("Error al subir el ticket a Storage:", error);
+            }
+            // Guardar en Firestore (añadiendo el link del ticket al registro de la venta)
+            await addDoc(collection(db, "ventas"), {
+                cliente_id: cliente.id, 
+                fecha: serverTimestamp(), 
+                detalles: carrito,
+                total_venta: tVenta, 
+                total_costo: tCosto, 
+                margen_utilidad: (tVenta - tCosto),
+                ticket_url: urlDescargaTicket // Guardado por si querés consultarlo después
+            });
+
+            // --- WHATSAPP CON ENLACE INCLUIDO ---
+            let linkTexto = urlDescargaTicket ? `%0A%0A*Podés descargar tu ticket digital aquí:*%0A${urlDescargaTicket}` : "";
+            
+            const msg = `*MINI SUPER TOÑITA*%0A%0AHola *${cliente.contacto}*,%0AGracias por tu compra en ${cliente.nombreNegocio}.%0A%0ATotal: *$${tVenta.toFixed(2)}*${linkTexto}%0A%0A¡Esperamos verle pronto!`;
+            
+            window.open(`https://wa.me/${cliente.telefono}?text=${msg}`, '_blank');
+
+            // También dejamos la descarga automática local por si la ocupás impresa en el momento
+            docPdf.save(`Ticket_${cliente.nombreNegocio.replace(/\s+/g, '_')}_${fechaStr}.pdf`);
+
+            // Limpieza del carrito
+            carrito = []; 
+            actualizarCarrito(); 
+            document.getElementById('cliente-select').value = "";
+        });
+         // <-- Aquí se cierra correctamente el addEventListener del botón cobrar
+    </script>
+</body>
+</html>
