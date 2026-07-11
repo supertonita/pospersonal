@@ -667,28 +667,29 @@
 
             // Descarga local automática del PDF en segundo plano (para control tuyo)
             docPdf.save(`Ticket_${cliente.nombreNegocio}_${fechaStr}.pdf`);
-
-            // 3. REDIRECCIÓN COHESIVA A LA APP DE WHATSAPP (iOS y Android Compatible)
-            // Como jsPDF corre local en el navegador del cliente, armamos un texto nítido con el detalle del cobro.
+// 3. REDIRECCIÓN INTEGRAL A WHATSAPP (Solución para Clientes Nuevos)
             const textoWhatsApp = `*MINI SUPER TOÑITA*\n\n¡Hola ${cliente.contacto}! Adjuntamos el detalle de tu orden:\n\n${detalleMensaje}\n*Total a pagar: $${tVenta.toFixed(2)}*\n\n¡Muchas gracias por tu compra!`;
-            
-            // Codificamos el texto de forma segura para URLs móviles
             const textoCodificado = encodeURIComponent(textoWhatsApp);
             
-            // Limpiamos el número de teléfono (quitando espacios o caracteres raros si los hay)
-            const numeroLimpio = cliente.telefono.replace(/[^0-9]/g, '');
+            // Limpiamos el número de cualquier espacio, guion o caracteres extraños
+            let numeroLimpio = cliente.telefono.replace(/[^0-9]/g, '');
 
-            // Usamos la API universal que abre la App directamente sin intermediarios
+            // Formateador automático de código de país (El Salvador: 503)
+            // Si el número solo tiene 8 dígitos (ej. 71234567), le pegamos el 503 al inicio de forma automática
+            if (numeroLimpio.length === 8) {
+                numeroLimpio = `503${numeroLimpio}`;
+            }
+
+            // Enlace universal wa.me estructurado correctamente para la app nativa
             const urlWhatsApp = `https://wa.me/${numeroLimpio}?text=${textoCodificado}`;
 
-            // LIMPIEZA DEL CARRITO ANTES DE SALIR
+            // LIMPIEZA DEL CARRITO ANTES DE LA REDIRECCIÓN
             carrito = [];
             actualizarCarrito();
             document.getElementById('cliente-select').value = "";
 
-            // Redirección en la misma pestaña para burlar los bloqueadores de popups de Safari/Chrome móvil
-            window.location.href = urlWhatsApp;
-        });
+            // Redirección directa
+            window.location.href = urlWhatsApp;});
     </script>
 </body>
 </html> 
