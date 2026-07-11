@@ -8,27 +8,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #e5e5e5; color: #000000; }
+        body { background-color: #F6F8F7; color:#155B5B; }
         .screen { display: none; min-height: 100vh; padding-bottom: 20px; }
         .screen.active { display: block; }
-        header { background: #151515; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;}
-        .nav-bar { display: flex; gap: 8px; padding: 10px; background: #adadad; }
+        header { background: #155B5B; color: #dbdfdf; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;}
+        .nav-bar { display: flex; gap: 8px; padding: 10px; background: #BDDADB; }
         .nav-bar button { flex: 1; padding: 10px 5px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; }
         .section { padding: 15px 20px; background: white; margin: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
         .form-group input, select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
-        .buscador-input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 2px solid #4a3b32; font-size: 16px; }
+        .buscador-input { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 2px solid #131212; font-size: 16px; }
         .grid-productos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .producto-card { border: 1px solid #0f0303; padding: 15px; border-radius: 8px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; }
-        .producto-card button { margin-top: 10px; width: 100%; padding: 8px; background: #4a3b32; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .producto-card { border: 1px solid #155B5B; padding: 15px; border-radius: 8px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; }
+        .producto-card button { margin-top: 10px; width: 100%; padding: 8px; background: #155B5B; color: white; border: none; border-radius: 4px; cursor: pointer; }
         #carrito-lista { list-style: none; margin-top: 10px; }
         #carrito-lista li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; align-items: center; }
         .totales { margin-top: 15px; font-size: 20px; font-weight: bold; text-align: right; }
         button { padding: 12px 15px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
         .btn-primary { background: #25D366; color: white; width: 100%; font-weight: bold; margin-top: 15px; }
         .btn-primary:disabled { background: #ccc; }
-        .btn-secondary { background: #f6f3ee; color: #222221; font-weight: bold; }
+        .btn-secondary { background: #f6f3ee; color: #155B5B; font-weight: bold; }
         .btn-danger { background: #e74c3c; color: white; padding: 6px 10px; font-size: 12px; border-radius: 4px; }
         .btn-edit { background: #3498db; color: white; padding: 6px 10px; font-size: 12px; border-radius: 4px; margin-right: 5px; }
         .btn-status { background: #f39c12; color: white; padding: 6px 10px; font-size: 12px; border-radius: 4px; }
@@ -43,7 +43,7 @@
 <body>
 
     <div id="pos-screen" class="screen active">
-        <header><h2>BIENVENIDO A PVD TOÑITA </h2></header>
+        <header><h2>POS TOÑITA </h2></header>
         <div class="nav-bar">
             <button id="btn-ver-reportes" class="btn-secondary">Reportes</button>
             <button id="btn-nav-producto" class="btn-secondary">Producto</button>
@@ -82,7 +82,7 @@
                     <input type="date" id="filtro-inicio">
                     <input type="date" id="filtro-fin">
                 </div>
-                <button id="btn-filtrar-reportes" class="btn-primary" style="margin-top: 0; background: #4a3b32;">Aplicar Filtro</button>
+                <button id="btn-filtrar-reportes" class="btn-primary" style="margin-top: 0; background: #155B5B;">Aplicar Filtro</button>
             </div>
             <div class="kpi-box">
                 <div>
@@ -125,7 +125,7 @@
                 <input type="number" step="0.01" id="prod-precio" placeholder="0.00">
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="btn-guardar-producto" class="btn-primary" style="background: #4a3b32; margin-top: 0;">Guardar</button>
+                <button id="btn-guardar-producto" class="btn-primary" style="background: #155B5B; margin-top: 0;">Guardar</button>
                 <button id="btn-cancelar-producto" class="btn-secondary" style="display: none;">Cancelar Edición</button>
             </div>
             <hr style="margin-top: 20px; border: 0; border-top: 1px solid #ccc;">
@@ -155,7 +155,7 @@
                 <input type="text" id="cli-telefono" placeholder="Ej. 50371234567">
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="btn-guardar-cliente" class="btn-primary" style="background: #4a3b32; margin-top: 0;">Guardar</button>
+                <button id="btn-guardar-cliente" class="btn-primary" style="background: #155B5B; margin-top: 0;">Guardar</button>
                 <button id="btn-cancelar-cliente" class="btn-secondary" style="display: none;">Cancelar Edición</button>
             </div>
             <hr style="margin-top: 20px; border: 0; border-top: 1px solid #ccc;">
@@ -578,14 +578,35 @@
             const cliente = clientesData.find(c => c.id === clienteId);
             
             let tVenta = 0, tCosto = 0;
+            let detalleMensaje = ""; // Para armar el resumen en texto plano para WhatsApp
+
             carrito.forEach(i => { 
                 tVenta += (i.precio_venta * i.cantidad); 
                 tCosto += (i.costo_unitario * i.cantidad); 
+                detalleMensaje += `* ${i.cantidad}x ${i.nombre} - $${(i.precio_venta * i.cantidad).toFixed(2)}\n`;
             });
             
-            // --- GENERACIÓN DE TICKET PROFESIONAL LISO ---
+            // Margen de utilidad para guardar en tu Firebase
+            const margenUtilidad = tVenta - tCosto;
+
+            // 1. GUARDAR EN FIREBASE FIRESTORE
+            try {
+                await addDoc(collection(db, "ventas"), {
+                    cliente_id: clienteId,
+                    nombre_negocio: cliente.nombreNegocio,
+                    total_venta: tVenta,
+                    costo_total: tCosto,
+                    margen_utilidad: margenUtilidad,
+                    fecha: serverTimestamp()
+                });
+            } catch (error) {
+                console.error("Error al guardar la venta: ", error);
+                alert("Hubo un problema al registrar la venta en la base de datos.");
+                return;
+            }
+
+            // 2. GENERACIÓN DE TICKET PDF (Mantenemos tu formato exacto)
             const { jsPDF } = window.jspdf;
-            
             let alturaTicket = 150 + (carrito.length * 22) + 60;
             const docPdf = new jsPDF({ format: [164, alturaTicket], unit: 'pt' });
 
@@ -626,7 +647,7 @@
                 docPdf.text(`${i.cantidad} x $${parseFloat(i.precio_venta).toFixed(2)}`, 20, y + 8);
                 
                 docPdf.setFontSize(7);
-                docPdf.text(`$${(i.precio_venta * i.cantidad).toFixed(2)}`, 144, i.precio_venta ? 144 : 144, { align: 'right' });
+                docPdf.text(`$${(i.precio_venta * i.cantidad).toFixed(2)}`, 144, y, { align: 'right' });
                 y += 22;
             });
             
@@ -644,55 +665,30 @@
             docPdf.setFontSize(7);
             docPdf.text("¡Esperamos verle pronto!", 82, y + 46, { align: 'center' });
 
-            // En lugar de descargarlo de inmediato en tu PC, obtenemos el string en Base64
-            const pdfBase64 = docPdf.output('datauristring');
+            // Descarga local automática del PDF en segundo plano (para control tuyo)
+            docPdf.save(`Ticket_${cliente.nombreNegocio}_${fechaStr}.pdf`);
 
-          let urlDescargaTicket = "";
-            try {
-                // Creamos una ruta única usando el nombre del negocio y una marca de tiempo
-                const nombreArchivo = `tickets/Ticket_${cliente.nombreNegocio.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
-                
-                // Inicializamos la variable obteniéndola directamente del objeto global de firebase
-                const firebaseStorageInstance = firebase.storage();
-                
-                // Creamos la referencia al archivo
-                const storageRef = firebaseStorageInstance.ref(nombreArchivo);
-                
-                // Subimos el string en formato Data URL
-                const snapshot = await storageRef.putString(pdfBase64, 'data_url');
-                
-                // Obtenemos la URL de descarga del snapshot finalizado
-                urlDescargaTicket = await snapshot.ref.getDownloadURL();
-            } catch (error) {
-                console.error("Error al subir el ticket a Storage:", error);
-            }
-            // Guardar en Firestore (añadiendo el link del ticket al registro de la venta)
-            await addDoc(collection(db, "ventas"), {
-                cliente_id: cliente.id, 
-                fecha: serverTimestamp(), 
-                detalles: carrito,
-                total_venta: tVenta, 
-                total_costo: tCosto, 
-                margen_utilidad: (tVenta - tCosto),
-                ticket_url: urlDescargaTicket // Guardado por si querés consultarlo después
-            });
-
-            // --- WHATSAPP CON ENLACE INCLUIDO ---
-            let linkTexto = urlDescargaTicket ? `%0A%0A*Podés descargar tu ticket digital aquí:*%0A${urlDescargaTicket}` : "";
+            // 3. REDIRECCIÓN COHESIVA A LA APP DE WHATSAPP (iOS y Android Compatible)
+            // Como jsPDF corre local en el navegador del cliente, armamos un texto nítido con el detalle del cobro.
+            const textoWhatsApp = `*MINI SUPER TOÑITA*\n\n¡Hola ${cliente.contacto}! Adjuntamos el detalle de tu orden:\n\n${detalleMensaje}\n*Total a pagar: $${tVenta.toFixed(2)}*\n\n¡Muchas gracias por tu compra!`;
             
-            const msg = `*MINI SUPER TOÑITA*%0A%0AHola *${cliente.contacto}*,%0AGracias por tu compra en ${cliente.nombreNegocio}.%0A%0ATotal: *$${tVenta.toFixed(2)}*${linkTexto}%0A%0A¡Esperamos verle pronto!`;
+            // Codificamos el texto de forma segura para URLs móviles
+            const textoCodificado = encodeURIComponent(textoWhatsApp);
             
-            window.open(`https://wa.me/${cliente.telefono}?text=${msg}`, '_blank');
+            // Limpiamos el número de teléfono (quitando espacios o caracteres raros si los hay)
+            const numeroLimpio = cliente.telefono.replace(/[^0-9]/g, '');
 
-            // También dejamos la descarga automática local por si la ocupás impresa en el momento
-            docPdf.save(`Ticket_${cliente.nombreNegocio.replace(/\s+/g, '_')}_${fechaStr}.pdf`);
+            // Usamos la API universal que abre la App directamente sin intermediarios
+            const urlWhatsApp = `https://wa.me/${numeroLimpio}?text=${textoCodificado}`;
 
-            // Limpieza del carrito
-            carrito = []; 
-            actualizarCarrito(); 
+            // LIMPIEZA DEL CARRITO ANTES DE SALIR
+            carrito = [];
+            actualizarCarrito();
             document.getElementById('cliente-select').value = "";
+
+            // Redirección en la misma pestaña para burlar los bloqueadores de popups de Safari/Chrome móvil
+            window.location.href = urlWhatsApp;
         });
-         // <-- Aquí se cierra correctamente el addEventListener del botón cobrar
     </script>
 </body>
-</html>
+</html> 
