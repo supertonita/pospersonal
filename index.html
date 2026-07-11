@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POS TOÑITA - Pro</title>
+    <title>POS TOÑITA</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -11,24 +11,24 @@
         body { background-color: #F6F8F7; color:#155B5B; }
         .screen { display: none; min-height: 100vh; padding-bottom: 20px; }
         .screen.active { display: block; }
-        header { background: #155B5B; color: #dbdfdf; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;}
-        .nav-bar { display: flex; gap: 8px; padding: 10px; background: #BDDADB; }
+        header { background: #155B5B; color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;}
+        .nav-bar { display: flex; gap: 8px; padding: 10px; background: #f6f8f7; }
         .nav-bar button { flex: 1; padding: 10px 5px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; }
-        .section { padding: 15px 20px; background: white; margin: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-        .form-group input, select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
-        .buscador-input { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 2px solid #131212; font-size: 16px; }
-        .grid-productos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .producto-card { border: 1px solid #155B5B; padding: 15px; border-radius: 8px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; }
-        .producto-card button { margin-top: 10px; width: 100%; padding: 8px; background: #155B5B; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .section { padding: 15px 20px; background: white; margin: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(139, 138, 138, 0.587); }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 10px; }
+        .form-group input, select { width: 100%; padding: 10px; border-radius: 15px; border: 1px solid #2c2b2b; font-size: 16px; }
+        .buscador-input { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 18px; border: 2px solid #155B5B; font-size: 13px; }
+        .grid-productos { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .producto-card { border: 1px solid #155B5B; padding: 15px; border-radius: 20px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; }
+        .producto-card button { margin-top: 10px; width: 100%; padding: 8px; background: #155B5B; color: white; border: none; border-radius: 20px; cursor: pointer; }
         #carrito-lista { list-style: none; margin-top: 10px; }
-        #carrito-lista li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; align-items: center; }
+        #carrito-lista li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ffffff; align-items: center; }
         .totales { margin-top: 15px; font-size: 20px; font-weight: bold; text-align: right; }
-        button { padding: 12px 15px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
-        .btn-primary { background: #25D366; color: white; width: 100%; font-weight: bold; margin-top: 15px; }
-        .btn-primary:disabled { background: #ccc; }
-        .btn-secondary { background: #f6f3ee; color: #155B5B; font-weight: bold; }
+        button { padding: 12px 15px; border: none; border-radius: 18px; font-size: 16px; cursor: pointer; }
+        .btn-primary { background: #124c4c; color: white; width: 100%; font-weight: bold; margin-top: 15px; }
+        .btn-primary:disabled { background: #ffffff; }
+        .btn-secondary { background: #155B5B; color: #ffffff; font-weight: bold; border-radius: 40px; }
         .btn-danger { background: #e74c3c; color: white; padding: 6px 10px; font-size: 12px; border-radius: 4px; }
         .btn-edit { background: #3498db; color: white; padding: 6px 10px; font-size: 12px; border-radius: 4px; margin-right: 5px; }
         .btn-status { background: #f39c12; color: white; padding: 6px 10px; font-size: 12px; border-radius: 4px; }
@@ -65,7 +65,7 @@
                 <h3>Carrito Actual</h3>
                 <ul id="carrito-lista"></ul>
                 <div class="totales"><p>Total: $<span id="total-venta">0.00</span></p></div>
-                <button id="btn-cobrar" class="btn-primary" disabled>Generar PDF y Enviar</button>
+                <button id="btn-cobrar" class="btn-primary" disabled> Enviar</button>
             </div>
         </main>
     </div>
@@ -152,13 +152,13 @@
             </div>
             <div class="form-group">
                 <label>Teléfono (WhatsApp):</label>
-                <input type="text" id="cli-telefono" placeholder="Ej. 50371234567">
+                <input type="text" id="cli-telefono" placeholder="Ej.71234567">
             </div>
             <div style="display: flex; gap: 10px;">
                 <button id="btn-guardar-cliente" class="btn-primary" style="background: #155B5B; margin-top: 0;">Guardar</button>
                 <button id="btn-cancelar-cliente" class="btn-secondary" style="display: none;">Cancelar Edición</button>
             </div>
-            <hr style="margin-top: 20px; border: 0; border-top: 1px solid #ccc;">
+            <hr style="margin-top: 20px; border: 0; border-top: 1px solid #f8f8f8;">
             <h3 style="margin-top: 15px;">Listado de Clientes</h3>
             <div id="lista-admin-clientes" class="listado-administrable"></div>
         </main>
