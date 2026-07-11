@@ -604,8 +604,7 @@
                 alert("Hubo un problema al registrar la venta en la base de datos.");
                 return;
             }
-
-            // 2. GENERACIÓN DE TICKET PDF (Mantenemos tu formato exacto)
+// --- GENERACIÓN DE TICKET PDF ---
             const { jsPDF } = window.jspdf;
             let alturaTicket = 150 + (carrito.length * 22) + 60;
             const docPdf = new jsPDF({ format: [164, alturaTicket], unit: 'pt' });
@@ -665,31 +664,35 @@
             docPdf.setFontSize(7);
             docPdf.text("¡Esperamos verle pronto!", 82, y + 46, { align: 'center' });
 
-            // Descarga local automática del PDF en segundo plano (para control tuyo)
-            docPdf.save(`Ticket_${cliente.nombreNegocio}_${fechaStr}.pdf`);
-// 3. REDIRECCIÓN INTEGRAL A WHATSAPP (Solución para Clientes Nuevos)
+            // --- MANEJO DE ENLACES PARA EVITAR EL BLOQUEO EN IPHONE ---
             const textoWhatsApp = `*MINI SUPER TOÑITA*\n\n¡Hola ${cliente.contacto}! Adjuntamos el detalle de tu orden:\n\n${detalleMensaje}\n*Total a pagar: $${tVenta.toFixed(2)}*\n\n¡Muchas gracias por tu compra!`;
             const textoCodificado = encodeURIComponent(textoWhatsApp);
             
-            // Limpiamos el número de cualquier espacio, guion o caracteres extraños
             let numeroLimpio = cliente.telefono.replace(/[^0-9]/g, '');
-
-            // Formateador automático de código de país (El Salvador: 503)
-            // Si el número solo tiene 8 dígitos (ej. 71234567), le pegamos el 503 al inicio de forma automática
             if (numeroLimpio.length === 8) {
                 numeroLimpio = `503${numeroLimpio}`;
             }
 
-            // Enlace universal wa.me estructurado correctamente para la app nativa
             const urlWhatsApp = `https://wa.me/${numeroLimpio}?text=${textoCodificado}`;
 
-            // LIMPIEZA DEL CARRITO ANTES DE LA REDIRECCIÓN
+            // Generamos el blob del PDF para abrirlo sin congelar la app principal
+            const pdfBlobString = docPdf.output('bloburl');
+
+            // LIMPIEZA DEL CARRITO ANTES DE LAS REDIRECCIONES
             carrito = [];
             actualizarCarrito();
             document.getElementById('cliente-select').value = "";
 
-            // Redirección directa
-            window.location.href = urlWhatsApp;});
+            // ESTRATEGIA PARA MÓVILES: 
+            // 1. Abrimos el PDF en una pestaña nueva (así no rompe el flujo del POS si regresas)
+            window.open(pdfBlobString, '_blank');
+
+            // 2. Inmediatamente redirigimos la pantalla principal a WhatsApp
+            // Al no ejecutarse el .save() directo, iOS no congela el hilo y salta a la app de una sola vez
+            setTimeout(() => {
+                window.location.href = urlWhatsApp;
+            }, 300);
+        });
     </script>
 </body>
 </html> 
